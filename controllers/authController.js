@@ -52,6 +52,7 @@ exports.login = async (req, res) => {
         res.send(err);
       }
 
+      // Token chứa ID và Role
       const token = JWT.sign(
         { userID: user._id, role: user.role },
         process.env.TOKEN_SECRET
