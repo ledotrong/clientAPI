@@ -49,7 +49,8 @@ const updateValidation = data => {
       .min(6),
     picture: Joi.string(),
     role: Joi.string().required(),
-    skills: Joi.array().required()
+    skills: Joi.array().required(),
+    address: Joi.string().required()
   };
 
   return Joi.validate(data, schema);
