@@ -46,9 +46,10 @@ passport.use(
       secretOrKey: process.env.TOKEN_SECRET
     },
     async (jwtPayload, cb) => {
+      console.log("thyyyyyyyy", jwtPayload);
       try {
-        const user = await User.findById(jwtPayload._id);
-
+        const user = await User.findById(jwtPayload._id === undefined? jwtPayload.userID : jwtPayload._id);
+        console.log("thyyyyyyyy", jwtPayload._id);
         if (!user) {
           return cb(null, false);
         } else {
