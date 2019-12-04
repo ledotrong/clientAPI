@@ -4,12 +4,13 @@ const JWT = require('jsonwebtoken');
 const passport = require('passport');
 const {
   registerValidation,
-  updateValidation, 
+  updateValidation,
   addInfoValidation,
   registerFbGgValidation
-
 } = require('../models/validation');
+
 const helpers = require('../helpers');
+
 // REGISTER
 exports.register = async (req, res) => {
   const { error } = registerValidation(req.body);
@@ -17,31 +18,42 @@ exports.register = async (req, res) => {
 
   // Kiem tra email bi trung?
   const userCheck = await User.findOne({ email: req.body.email });
-  if (userCheck) {console.log('Email already exists'); return res.status(400).json('Email already exists');}
+  if (userCheck) {
+    console.log('Email already exists');
+    return res.status(400).json('Email already exists');
+  }
 
   // Ma hoa mat khau
   const salt = await bcrypt.genSalt();
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
   const newUser = new User({
-    
     email: req.body.email,
     password: hashedPassword,
     role: req.body.role,
-    name: "undefined",
-    address: "undefined"
+    name: 'undefined',
+    address: 'undefined'
   });
-console.log(newUser);
+  console.log(newUser);
   try {
     const savedUser = await newUser.save();
-    helpers.SendVerifyAccountMail("localhost:3001", newUser.email, newUser._id, function (error, key) {
-      if (!error) 
+    helpers.SendVerifyAccountMail(
+      'https://tutor-client-api.herokuapp.com',
+      newUser.email,
+      newUser._id,
+      function(error, key) {
+        if (!error)
           //return res.status(500).send('Unknown error. Please try again.');
-            res.status(200).send('Email was sent successfully. Please check your email to validate account.');
-  });
+          res
+            .status(200)
+            .send(
+              'Email was sent successfully. Please check your email to validate account.'
+            );
+      }
+    );
     res.json({ newUser: newUser._id });
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(400).json(err.errors.address.validatorError);
   }
 };
@@ -78,22 +90,21 @@ exports.login = async (req, res) => {
           },
           token
         });
-      }
-
-      else return res.json({
-        message: info.message,
-        user: {
-          date: user.date,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          picture: user.picture,
-          skills: user.skills,
-          address: user.address,
-          current: 3
-        },
-        token
-      });
+      } else
+        return res.json({
+          message: info.message,
+          user: {
+            date: user.date,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            picture: user.picture,
+            skills: user.skills,
+            address: user.address,
+            current: 3
+          },
+          token
+        });
     });
   })(req, res);
 };
@@ -129,11 +140,11 @@ exports.addInfo = async (req, res) => {
   const newUser = {
     name: req.body.name,
     skills: req.body.skills,
-    address: req.body.address,
+    address: req.body.address
   };
   const { error } = addInfoValidation(newUser);
   if (error) return res.status(400).json(error.details[0].message);
-  
+
   try {
     const addInfo = await User.updateOne(
       { _id: req.body.id },
@@ -142,13 +153,12 @@ exports.addInfo = async (req, res) => {
     res.json(addInfo);
   } catch (err) {
     console.log(err.response);
-    console.log("abc",err);
+    console.log('abc', err);
     res.status(400).json(err);
   }
-}
+};
 
 exports.addInfoFb = async (req, res) => {
- 
   const newUser = {
     role: req.body.role,
     skills: req.body.skills,
@@ -156,8 +166,8 @@ exports.addInfoFb = async (req, res) => {
   };
   const { error } = registerFbGgValidation(newUser);
   if (error) return res.status(400).json(error.details[0].message);
- newUser.activated = true;
- 
+  newUser.activated = true;
+
   try {
     const addInfo = await User.updateOne(
       { 'facebookProvider.id': req.body.fbid },
@@ -167,7 +177,7 @@ exports.addInfoFb = async (req, res) => {
   } catch (err) {
     res.status(400).json(err);
   }
-}
+};
 
 exports.addInfoGg = async (req, res) => {
   const newUser = {
@@ -187,14 +197,14 @@ exports.addInfoGg = async (req, res) => {
   } catch (err) {
     res.status(400).json(err);
   }
-}
+};
 
 exports.activatedAccount = async (req, res) => {
   const newUser = {
     activated: true
   };
   try {
-    console.log("hello", req.body.id);
+    console.log('hello', req.body.id);
     const activated = await User.updateOne(
       { _id: req.body.id },
       { $set: newUser }
@@ -203,32 +213,50 @@ exports.activatedAccount = async (req, res) => {
   } catch (err) {
     res.status(400).json(err);
   }
-}
-exports.loginFacebook = (req, res, next) =>{
+};
+exports.loginFacebook = (req, res, next) => {
   passport.authenticate('facebook-token', (err, user, info) => {
-      if (err || !user) {
-          return res.status(401).json('User Not Authenticated');
-      }
-      const token = JWT.sign({_id: user._id}, process.env.TOKEN_SECRET);
-      return res.status(200).json({name: user.name, email: user.email,picture:user.picture, skills: user.skills, address: user.address, role: user.role, activated: user.activated, token});
+    if (err || !user) {
+      return res.status(401).json('User Not Authenticated');
+    }
+    const token = JWT.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+    return res.status(200).json({
+      name: user.name,
+      email: user.email,
+      picture: user.picture,
+      skills: user.skills,
+      address: user.address,
+      role: user.role,
+      activated: user.activated,
+      token
+    });
   })(req, res, next);
-}
-exports.loginGoogle = (req, res, next)=>{
+};
+exports.loginGoogle = (req, res, next) => {
   passport.authenticate('google-token', (err, user, info) => {
-      if (err || !user) {
-          return res.status(401).json('User Not Authenticated');
-      }
-      const token = JWT.sign({_id: user._id}, process.env.TOKEN_SECRET);
-      return res.status(200).json({name: user.name, email: user.email,picture:user.picture,skills: user.skills, address: user.address, role: user.role, activated: user.activated, token});
+    if (err || !user) {
+      return res.status(401).json('User Not Authenticated');
+    }
+    const token = JWT.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+    return res.status(200).json({
+      name: user.name,
+      email: user.email,
+      picture: user.picture,
+      skills: user.skills,
+      address: user.address,
+      role: user.role,
+      activated: user.activated,
+      token
+    });
   })(req, res, next);
-}
+};
 exports.getFacebookId = async (req, res) => {
   const user = await User.findById(req.query.id);
-  if (user) res.status(200).json({facebookId: user.facebookProvider.id});
-  else res.status(200).json("Failed");
-}
+  if (user) res.status(200).json({ facebookId: user.facebookProvider.id });
+  else res.status(200).json('Failed');
+};
 exports.getGoogleId = async (req, res) => {
   const user = await User.findById(req.query.id);
-  if (user) res.status(200).json({googleId: user.googleProvider.id});
-  else res.status(200).json("Failed");
-}
+  if (user) res.status(200).json({ googleId: user.googleProvider.id });
+  else res.status(200).json('Failed');
+};
