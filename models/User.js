@@ -47,18 +47,18 @@ const userSchema = new mongoose.Schema({
   },
   facebookProvider: {
     type: {
-        id: String,
-        token: String
+      id: String,
+      token: String
     },
     select: true
-},
-googleProvider: {
+  },
+  googleProvider: {
     type: {
-        id: String,
-        token: String
+      id: String,
+      token: String
     },
     select: true
-}
+  }
 });
 
 module.exports = mongoose.model('User', userSchema);
