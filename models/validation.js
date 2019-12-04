@@ -9,7 +9,7 @@ const registerValidation = data => {
     password: Joi.string()
       .required()
       .min(6),
-    role: Joi.string().required(),
+    role: Joi.string().required()
   };
 
   return Joi.validate(data, schema);
@@ -61,6 +61,7 @@ const addInfoValidation = data => {
 
   return Joi.validate(data, schema);
 };
+
 const registerFbGgValidation = data => {
   const schema = {
     role: Joi.string().required(),
