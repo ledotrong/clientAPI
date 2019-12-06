@@ -13,7 +13,7 @@ exports.SendVerifyAccountMail = function (host, email,id, cb) {
     mailOptions = {
         to: email,
         subject: "[Tutor] Verify Account",
-        html: "Hello,<br> Please Click on the link to verify your account.<br><a href=" + link + ">Click here</a>."
+        html: "Hello,<br> Please click on the link to verify your account.<br><a href=" + link + ">Click here</a>."
     }
     console.log(mailOptions);
     console.log(smtpTransport.auth);
