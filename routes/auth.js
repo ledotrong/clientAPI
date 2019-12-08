@@ -14,7 +14,7 @@ router.post('/loginfb', authController.loginFacebook);
 router.post('/logingg', authController.loginGoogle);
 router.post('/registerfb', authController.addInfoFb);
 router.post('/registergg', authController.addInfoGg);
-router.post('/updateavatar', authController.updateAvatar);
-router.post('/updateinfo', authController.updateInfo);
+router.post('/updateavatar', authController.verifyToken, authController.updateAvatar);
+router.post('/updateinfo', authController.verifyToken, authController.updateInfo);
 
 module.exports = router;

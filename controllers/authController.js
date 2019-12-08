@@ -37,7 +37,7 @@ exports.register = async (req, res) => {
   try {
     const savedUser = await newUser.save();
     helpers.SendVerifyAccountMail(
-      'tutorclientapi.herokuapp.com',
+      'tutorweb.herokuapp.com',
       newUser.email,
       newUser._id,
       function(error, key) {
@@ -267,38 +267,35 @@ exports.getGoogleId = async (req, res) => {
   else res.status(200).json('Failed');
 };
 
-const verifyToken = async () => {
+exports.verifyToken = (req, res, next) => {
+  
   passport.authenticate('jwt', { session: false },  (err, user, info) => {
     if (err || !user) {
-      return  { err: info? info.message : "Invalid token", user: null};
-    }
-    else return user;
-  })(req, res)
-}
-exports.updateAvatar = async (req, res) => {
-  const kq = await verifyToken();
-  if (kq.err || !kq.user) {
-      return res.status(400).json(kq.err);
+      return  res.status(401).json(info? info.message : "Invalid token") ;
     }
     else {
+      console.log(user);
+      req.user = user;
+  next();
+    }
+  })(req)
+  
+}
+exports.updateAvatar = async (req, res) => {
+  
       try {
         const updatedAvatar = await User.updateOne(
-          { _id: kq.user._id },
+          { _id: req.user._id },
           { $set: {picture: req.body.picture} }
         );
         res.json(updatedAvatar);
       } catch (err) {
         res.status(400).json(err);
       }
-    }
 }
 
 exports.updateInfo = async (req, res) => {
-  const kq = await verifyToken();
-  if (kq.err || !kq.user) {
-      return res.status(400).json(kq.err);
-    }
-    else {
+  console.log("helo",req.user);
       const newUser = {
         name: req.body.name,
          address: req.body.address,
@@ -307,12 +304,11 @@ exports.updateInfo = async (req, res) => {
       }
       try {
         const updatedInfo = await User.updateOne(
-          { _id: kq.user._id },
+          { _id: req.user._id },
           { $set: newUser }
         );
         res.json(updatedInfo);
       } catch (err) {
         res.status(400).json(err);
       }
-    }
 }
