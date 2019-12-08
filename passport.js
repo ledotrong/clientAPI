@@ -22,7 +22,6 @@ passport.use(
         if (!user) {
           return cb(null, false, { message: 'Incorrect email or password.' });
         }
-
         validatePass = await bcrypt.compare(password, user.password);
         if (!validatePass)
           return cb(null, false, {
@@ -46,10 +45,9 @@ passport.use(
       secretOrKey: process.env.TOKEN_SECRET
     },
     async (jwtPayload, cb) => {
-      console.log("thyyyyyyyy", jwtPayload);
+      console.log("00000", jwtPayload._id, jwtPayload.userID);
       try {
         const user = await User.findById(jwtPayload._id === undefined? jwtPayload.userID : jwtPayload._id);
-        console.log("thyyyyyyyy", jwtPayload._id);
         if (!user) {
           return cb(null, false);
         } else {
@@ -78,8 +76,6 @@ function (accessToken, refreshToken, profile, done) {
             name: profile.displayName,
             email: profile.emails[0].value,
             picture: profile.photos[0].value,
-            skills: [],
-            address: "undefined",
             role: "undefined",
             password: "undefined",
             facebookProvider: {
@@ -117,8 +113,6 @@ function (accessToken, refreshToken, profile, done) {
             name: profile.displayName,
             email: profile.emails[0].value,
             picture: profile._json.picture,
-            skills: [],
-            address: "undefined",
             role: "undefined",
             password: "undefined",
             googleProvider: {

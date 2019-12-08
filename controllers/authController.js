@@ -31,14 +31,13 @@ exports.register = async (req, res) => {
     email: req.body.email,
     password: hashedPassword,
     role: req.body.role,
-    name: 'undefined',
-    address: 'undefined'
+    name: 'undefined'
   });
   console.log(newUser);
   try {
     const savedUser = await newUser.save();
     helpers.SendVerifyAccountMail(
-      'https://tutor-client-api.herokuapp.com',
+      'tutorclientapi.herokuapp.com',
       newUser.email,
       newUser._id,
       function(error, key) {
@@ -140,7 +139,8 @@ exports.addInfo = async (req, res) => {
   const newUser = {
     name: req.body.name,
     skills: req.body.skills,
-    address: req.body.address
+    address: req.body.address,
+    introduction: null
   };
   const { error } = addInfoValidation(newUser);
   if (error) return res.status(400).json(error.details[0].message);
@@ -162,7 +162,8 @@ exports.addInfoFb = async (req, res) => {
   const newUser = {
     role: req.body.role,
     skills: req.body.skills,
-    address: req.body.address
+    address: req.body.address,
+    introduction: null
   };
   const { error } = registerFbGgValidation(newUser);
   if (error) return res.status(400).json(error.details[0].message);
@@ -183,7 +184,8 @@ exports.addInfoGg = async (req, res) => {
   const newUser = {
     role: req.body.role,
     skills: req.body.skills,
-    address: req.body.address
+    address: req.body.address,
+    introduction: null
   };
   const { error } = registerFbGgValidation(newUser);
   if (error) return res.status(400).json(error.details[0].message);
@@ -214,6 +216,7 @@ exports.activatedAccount = async (req, res) => {
     res.status(400).json(err);
   }
 };
+
 exports.loginFacebook = (req, res, next) => {
   passport.authenticate('facebook-token', (err, user, info) => {
     if (err || !user) {
@@ -232,6 +235,7 @@ exports.loginFacebook = (req, res, next) => {
     });
   })(req, res, next);
 };
+
 exports.loginGoogle = (req, res, next) => {
   passport.authenticate('google-token', (err, user, info) => {
     if (err || !user) {
@@ -250,13 +254,65 @@ exports.loginGoogle = (req, res, next) => {
     });
   })(req, res, next);
 };
+
 exports.getFacebookId = async (req, res) => {
   const user = await User.findById(req.query.id);
   if (user) res.status(200).json({ facebookId: user.facebookProvider.id });
   else res.status(200).json('Failed');
 };
+
 exports.getGoogleId = async (req, res) => {
   const user = await User.findById(req.query.id);
   if (user) res.status(200).json({ googleId: user.googleProvider.id });
   else res.status(200).json('Failed');
 };
+
+const verifyToken = async () => {
+  passport.authenticate('jwt', { session: false },  (err, user, info) => {
+    if (err || !user) {
+      return  { err: info? info.message : "Invalid token", user: null};
+    }
+    else return user;
+  })(req, res)
+}
+exports.updateAvatar = async (req, res) => {
+  const kq = await verifyToken();
+  if (kq.err || !kq.user) {
+      return res.status(400).json(kq.err);
+    }
+    else {
+      try {
+        const updatedAvatar = await User.updateOne(
+          { _id: kq.user._id },
+          { $set: {picture: req.body.picture} }
+        );
+        res.json(updatedAvatar);
+      } catch (err) {
+        res.status(400).json(err);
+      }
+    }
+}
+
+exports.updateInfo = async (req, res) => {
+  const kq = await verifyToken();
+  if (kq.err || !kq.user) {
+      return res.status(400).json(kq.err);
+    }
+    else {
+      const newUser = {
+        name: req.body.name,
+         address: req.body.address,
+         skills: req.body.skills,
+         introduction: req.body.introduction
+      }
+      try {
+        const updatedInfo = await User.updateOne(
+          { _id: kq.user._id },
+          { $set: newUser }
+        );
+        res.json(updatedInfo);
+      } catch (err) {
+        res.status(400).json(err);
+      }
+    }
+}

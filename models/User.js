@@ -33,9 +33,17 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   address: {
+    type: {
+      address: String,
+      ward: String,
+      district: String,
+      province: String
+    },
+    required: false
+  },
+  introduction: {
     type: String,
-    required: false,
-    min: 10
+    required: false
   },
   date: {
     type: Date,
@@ -49,15 +57,13 @@ const userSchema = new mongoose.Schema({
     type: {
       id: String,
       token: String
-    },
-    select: true
+    }
   },
   googleProvider: {
     type: {
       id: String,
       token: String
-    },
-    select: true
+    }
   }
 });
 
