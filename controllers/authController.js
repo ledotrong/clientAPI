@@ -31,7 +31,8 @@ exports.register = async (req, res) => {
     email: req.body.email,
     password: hashedPassword,
     role: req.body.role,
-    name: 'undefined'
+    name: 'undefined',
+    wages: 0
   });
   console.log(newUser);
   try {
@@ -78,7 +79,7 @@ exports.login = async (req, res) => {
         process.env.TOKEN_SECRET
       );
 
-      if (!user.activated) {
+      if (user.status === "inactive") {
         return res.json({
           message: info.message,
           user: {
@@ -100,6 +101,7 @@ exports.login = async (req, res) => {
             picture: user.picture,
             skills: user.skills,
             address: user.address,
+            wages: user.wages,
             current: 3
           },
           token
@@ -167,7 +169,7 @@ exports.addInfoFb = async (req, res) => {
   };
   const { error } = registerFbGgValidation(newUser);
   if (error) return res.status(400).json(error.details[0].message);
-  newUser.activated = true;
+  newUser.status = "active";
 
   try {
     const addInfo = await User.updateOne(
@@ -189,7 +191,7 @@ exports.addInfoGg = async (req, res) => {
   };
   const { error } = registerFbGgValidation(newUser);
   if (error) return res.status(400).json(error.details[0].message);
-  newUser.activated = true;
+  newUser.status = "active";
   try {
     const addInfo = await User.updateOne(
       { 'googleProvider.id': req.body.fbid },
@@ -203,15 +205,15 @@ exports.addInfoGg = async (req, res) => {
 
 exports.activatedAccount = async (req, res) => {
   const newUser = {
-    activated: true
+    status: "active"
   };
   try {
     console.log('hello', req.body.id);
-    const activated = await User.updateOne(
+    const status = await User.updateOne(
       { _id: req.body.id },
       { $set: newUser }
     );
-    res.status(200).json(activated);
+    res.status(200).json(status);
   } catch (err) {
     res.status(400).json(err);
   }
@@ -230,7 +232,8 @@ exports.loginFacebook = (req, res, next) => {
       skills: user.skills,
       address: user.address,
       role: user.role,
-      activated: user.activated,
+      status: user.status,
+      wages: user.wages,
       token
     });
   })(req, res, next);
@@ -249,7 +252,8 @@ exports.loginGoogle = (req, res, next) => {
       skills: user.skills,
       address: user.address,
       role: user.role,
-      activated: user.activated,
+      status: user.status,
+      wages: user.wages,
       token
     });
   })(req, res, next);
@@ -258,13 +262,13 @@ exports.loginGoogle = (req, res, next) => {
 exports.getFacebookId = async (req, res) => {
   const user = await User.findById(req.query.id);
   if (user) res.status(200).json({ facebookId: user.facebookProvider.id });
-  else res.status(200).json('Failed');
+  else res.status(400).json('Failed');
 };
 
 exports.getGoogleId = async (req, res) => {
   const user = await User.findById(req.query.id);
   if (user) res.status(200).json({ googleId: user.googleProvider.id });
-  else res.status(200).json('Failed');
+  else res.status(400).json('Failed');
 };
 
 exports.verifyToken = (req, res, next) => {
@@ -300,7 +304,8 @@ exports.updateInfo = async (req, res) => {
         name: req.body.name,
          address: req.body.address,
          skills: req.body.skills,
-         introduction: req.body.introduction
+         introduction: req.body.introduction,
+         wages: req.body.wages
       }
       try {
         const updatedInfo = await User.updateOne(

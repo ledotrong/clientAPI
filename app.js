@@ -12,6 +12,8 @@ var cors = require('cors');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
+var tutorsRouter = require('./routes/tutors');
+var skillsRouter = require('./routes/skills');
 
 var app = express();
 
@@ -53,6 +55,8 @@ app.use(cors(corsOption));
 app.use('/', indexRouter);
 app.use('/me', passport.authenticate('jwt', { session: false }), usersRouter);
 app.use('/user', authRouter);
+app.use('/tutor', tutorsRouter);
+app.use('/skill', skillsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -35,7 +35,6 @@ const userSchema = new mongoose.Schema({
   address: {
     type: {
       address: String,
-      ward: String,
       district: String,
       province: String
     },
@@ -49,9 +48,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  activated: {
-    type: Boolean,
-    default: false
+  status: {
+    type: String,
+    default: "inactive"
   },
   facebookProvider: {
     type: {
@@ -64,6 +63,10 @@ const userSchema = new mongoose.Schema({
       id: String,
       token: String
     }
+  },
+  wages:{
+    type: Number,
+    default: 0
   }
 });
 
