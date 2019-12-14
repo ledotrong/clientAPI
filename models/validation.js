@@ -56,7 +56,11 @@ const addInfoValidation = data => {
       .min(6),
     picture: Joi.string(),
     skills: Joi.array().required(),
-    address: Joi.string().required()
+    address:{
+      address: Joi.string().required(),
+      district: Joi.string().required(),
+      province: Joi.string().required()
+    } 
   };
 
   return Joi.validate(data, schema);

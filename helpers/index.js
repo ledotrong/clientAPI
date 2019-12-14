@@ -9,7 +9,7 @@ var smtpTransport = nodemailer.createTransport({
 });
 
 exports.SendVerifyAccountMail = function (host, email,id, cb) {
-    link = "https://" + host + "/verifyaccount/" + id;
+    link = "http://" + host + "/verifyaccount/" + id;
     mailOptions = {
         to: email,
         subject: "[Tutor] Verify Account",

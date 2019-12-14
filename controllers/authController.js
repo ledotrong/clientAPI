@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
   try {
     const savedUser = await newUser.save();
     helpers.SendVerifyAccountMail(
-      'tutorweb.herokuapp.com' /*'localhost:3000'*/,
+     /* 'tutorweb.herokuapp.com'*/ 'localhost:3000',
       newUser.email,
       newUser._id,
       function(error, key) {
@@ -143,11 +143,11 @@ exports.addInfo = async (req, res) => {
   const newUser = {
     name: req.body.name,
     skills: req.body.skills,
-    address: req.body.address,
-    introduction: null
+    address: req.body.address
   };
+
   const { error } = addInfoValidation(newUser);
-  if (error) return res.status(400).json(error.details[0].message);
+  if (error) {  console.log("halooooo");return res.status(400).json(error.details[0].message);}
 
   try {
     const addInfo = await User.updateOne(
@@ -301,7 +301,7 @@ exports.updateAvatar = async (req, res) => {
 }
 
 exports.updateInfo = async (req, res) => {
-  console.log("helo",req.user);
+  console.log("helo",req.body);
       const newUser = {
         name: req.body.name,
          address: req.body.address,
