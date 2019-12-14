@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
   try {
     const savedUser = await newUser.save();
     helpers.SendVerifyAccountMail(
-      'tutorweb.herokuapp.com',
+      'tutorweb.herokuapp.com' /*'localhost:3000'*/,
       newUser.email,
       newUser._id,
       function(error, key) {
@@ -90,7 +90,9 @@ exports.login = async (req, res) => {
           },
           token
         });
-      } else
+      } else if (user.status === "banned"){
+        return res.status(400).json({message: "Account has been banned", user: null});
+      }else
         return res.json({
           message: info.message,
           user: {

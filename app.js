@@ -6,7 +6,7 @@ var logger = require('morgan');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const passport = require('passport');
-
+const bodyParser = require('body-parser');
 require('./passport');
 var cors = require('cors');
 var indexRouter = require('./routes/index');
@@ -26,6 +26,9 @@ mongoose.connect(
   () => console.log('Connect to DB')
 );
 
+
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
