@@ -6,7 +6,8 @@ const {
   registerValidation,
   updateValidation,
   addInfoValidation,
-  registerFbGgValidation
+  registerFbGgValidation,
+  changePasswordValidation
 } = require('../models/validation');
 
 const helpers = require('../helpers');
@@ -277,7 +278,7 @@ exports.verifyToken = (req, res, next) => {
   
   passport.authenticate('jwt', { session: false },  (err, user, info) => {
     if (err || !user) {
-      return  res.status(401).json(info? info.message : "Invalid token") ;
+      return  res.status(401).json("Invalid token") ;
     }
     else {
       console.log(user);
@@ -318,4 +319,25 @@ exports.updateInfo = async (req, res) => {
       } catch (err) {
         res.status(400).json(err);
       }
+}
+exports.changePassword = async (req, res) =>{
+  var data = {
+    password: req.body.currentPassword,
+    newpassword: req.body.newPassword
+  }
+  var ret = bcrypt.compareSync(data.password, req.user.password);
+  if (ret) {
+    const { error } = changePasswordValidation(data);
+    if (error) return res.status(400).json({message: error.details[0].message});
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+    try {
+      const kq = await User.updateOne({_id: req.user._id},{$set:{"password": hashedPassword}});
+      return res.status(200).json();
+      }
+    catch(err){
+      return res.status(400).json({message: err});
+    }
+  }
+  else return res.status(400).json({message: "Invalid password"});
 }

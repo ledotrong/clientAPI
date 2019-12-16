@@ -75,9 +75,17 @@ const registerFbGgValidation = data => {
 
   return Joi.validate(data, schema);
 };
+const changePasswordValidation = data => {
+  const schema = {
+    password: Joi.string().required(),
+    newpassword: Joi.string().required().min(6).max(255)
+  };
+  return Joi.validate(data, schema);
+}
 
 module.exports.registerValidation = registerValidation;
 module.exports.loginValidation = loginValidation;
 module.exports.updateValidation = updateValidation;
 module.exports.addInfoValidation = addInfoValidation;
 module.exports.registerFbGgValidation = registerFbGgValidation;
+module.exports.changePasswordValidation = changePasswordValidation;
