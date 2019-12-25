@@ -60,7 +60,8 @@ const addInfoValidation = data => {
       address: Joi.string().required(),
       district: Joi.string().required(),
       province: Joi.string().required()
-    } 
+    },
+    rate: Joi.number().required() 
   };
 
   return Joi.validate(data, schema);
@@ -82,7 +83,6 @@ const changePasswordValidation = data => {
   };
   return Joi.validate(data, schema);
 }
-
 module.exports.registerValidation = registerValidation;
 module.exports.loginValidation = loginValidation;
 module.exports.updateValidation = updateValidation;

@@ -14,6 +14,8 @@ var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var tutorsRouter = require('./routes/tutors');
 var skillsRouter = require('./routes/skills');
+var contractsRouter = require('./routes/contracts');
+var messagesRouter = require('./routes/messages');
 
 var app = express();
 
@@ -60,6 +62,8 @@ app.use('/me', passport.authenticate('jwt', { session: false }), usersRouter);
 app.use('/user', authRouter);
 app.use('/tutor', tutorsRouter);
 app.use('/skill', skillsRouter);
+app.use('/contract', contractsRouter);
+app.use('/message', messagesRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

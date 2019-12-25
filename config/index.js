@@ -13,5 +13,12 @@ module.exports = {
       '163647069051-hk900htr285s2icr1r2sjf1ae1qq9tak.apps.googleusercontent.com',
     clientSecret: 'MISgnNZq0xZXDNsjEWXn4xtG',
     callbackURL: 'https://tutor-client-api.herokuapp.com/auth/google/callback'
+  },
+  contractStatus: {
+    request: "request",
+    paymentConfirmation: "paymentConfirmation",
+    inProcess: "inProcess",
+    finished: "finished",
+    complain: "complain"
   }
 };

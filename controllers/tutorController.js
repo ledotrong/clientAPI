@@ -30,8 +30,8 @@ exports.searchTutorList = (req, res)=>{
 }
 
 exports.getTutorList = (req, res)=>{
-    var query = User.find({role: "tutor"});
-    var query1 = User.find({role: "tutor"});
+    var query = User.find({"role": "tutor"});
+    var query1 = User.find({"role": "tutor"});
     query.count();
     query.exec(function (err, count){
         if (err) return res.status(400).json(err);
@@ -40,9 +40,4 @@ exports.getTutorList = (req, res)=>{
             return res.status(200).json({tutorlist, totalPage: count});
         })
     })
-}
-exports.getTutorDetail = async(req, res)=>{
-    const tutor = await User.findById(req.query._id);
-    if (tutor) return res.status(200).json(tutor);
-    return res.status(400).json("Load data failed");
 }

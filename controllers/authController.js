@@ -1,4 +1,6 @@
 const User = require('../models/User');
+const Socket = require('../models/Socket');
+const forgotPassword = require('../models/ForgotPassword');
 const bcrypt = require('bcryptjs');
 const JWT = require('jsonwebtoken');
 const passport = require('passport');
@@ -33,15 +35,17 @@ exports.register = async (req, res) => {
     password: hashedPassword,
     role: req.body.role,
     name: 'undefined',
-    wages: 0
+    wages: 0,
+    newMessages: 0
   });
   console.log(newUser);
   try {
     const savedUser = await newUser.save();
     helpers.SendVerifyAccountMail(
-     /* 'tutorweb.herokuapp.com'*/ 'localhost:3000',
+      'tutorweb.herokuapp.com' /*'localhost:3000'*/,
       newUser.email,
       newUser._id,
+      newUser.role,
       function(error, key) {
         if (!error)
           //return res.status(500).send('Unknown error. Please try again.');
@@ -107,6 +111,7 @@ exports.login = async (req, res) => {
             wages: user.wages,
             current: 3
           },
+          newMessages: user.newMessages,
           token
         });
     });
@@ -141,20 +146,28 @@ exports.update = async (req, res) => {
 };
 
 exports.addInfo = async (req, res) => {
-  const newUser = {
+  var newUser = {
     name: req.body.name,
-    skills: req.body.skills,
+    skills: Array(0),
+    rate: 0,
     address: req.body.address
   };
-
+  if (req.body.role === "tutor") {
+    newUser.skills = req.body.skills
+  }
   const { error } = addInfoValidation(newUser);
-  if (error) {  console.log("halooooo");return res.status(400).json(error.details[0].message);}
+  if (error)return res.status(400).json(error.details[0].message);
 
   try {
     const addInfo = await User.updateOne(
       { _id: req.body.id },
       { $set: newUser }
     );
+    var newsocket= {
+      userID: req.body.id,
+      socketID: null
+    }
+    await Socket.insertMany([{userID: newsocket.userID, socketID: newsocket.socketID}]);
     res.json(addInfo);
   } catch (err) {
     console.log(err.response);
@@ -275,7 +288,7 @@ exports.getGoogleId = async (req, res) => {
 };
 
 exports.verifyToken = (req, res, next) => {
-  
+  console.log(req.body, "veri")
   passport.authenticate('jwt', { session: false },  (err, user, info) => {
     if (err || !user) {
       return  res.status(401).json("Invalid token") ;
@@ -303,13 +316,19 @@ exports.updateAvatar = async (req, res) => {
 
 exports.updateInfo = async (req, res) => {
   console.log("helo",req.body);
-      const newUser = {
+  var newUser;
+  if (req.user.role == "tutor")
+     newUser = {
         name: req.body.name,
          address: req.body.address,
          skills: req.body.skills,
          introduction: req.body.introduction,
          wages: req.body.wages
       }
+    else newUser={
+      name: req.body.name,
+         address: req.body.address,
+    }
       try {
         const updatedInfo = await User.updateOne(
           { _id: req.user._id },
@@ -340,4 +359,93 @@ exports.changePassword = async (req, res) =>{
     }
   }
   else return res.status(400).json({message: "Invalid password"});
+}
+function makeid() {
+  var result           = '';
+  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charactersLength = characters.length;
+  for ( var i = 0; i < 6; i++ ) {
+     result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
+exports.forgotPassword= async (req, res)=>{
+  const user = await User.find({"email": req.body.email});
+  if (user.length == 0) return res.status(400).json({message: "Can not find this email. Please try again."});
+  else{
+  const ForgotPassword = new forgotPassword({
+    email: req.body.email,
+    time: new Date(),
+    status: 0,
+    code: makeid()
+  })
+  try {
+     await ForgotPassword.save();
+     
+    helpers.forgotPassword(
+      req.body.email,
+      ForgotPassword.code,
+      function(error, key) {
+        if (!error)
+          //return res.status(500).send('Unknown error. Please try again.');
+          res
+            .status(200)
+            .json({message:
+              'Email was sent successfully. You only have 5 minutes to enter the code after email was sent. Please check your email immediately to get the code.'
+            });
+      }
+    );
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({message: err.errors.address.validatorError});
+  }
+}
+}
+exports.checkCode = async (req,res)=>{
+  const {email, code} = req.body;
+  const temp = await forgotPassword.findOne({email, code});
+  if (!temp) res.status(400).json({message: "Invalid code"});
+  else{
+    if (temp.status == 1) res.status(400).json({message: "This code has been used."});
+    else if (temp.status == -1) res.status(400).json({message: "This code had expired."});
+    else {
+    var today = new Date();
+    const diffTime = Math.abs(today - temp.time);
+const diffDays = diffTime/64000 ;
+    if (diffDays>5) res.status(400).json({message: "This code had expired."});
+    else{
+      await forgotPassword.update({code},{$set: {status: 1}});
+      res.status(200).json();
+    }
+    }
+  }
+}
+exports.changeForgotPassword = async (req,res)=>{
+  const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(req.body.newPassword, salt);
+    try {
+      const kq = await User.update({email: req.body.email},{$set:{"password": hashedPassword}});
+      return res.status(200).json();
+      }
+    catch(err){
+      return res.status(400).json({message: err});
+    }
+}
+exports.getUserDetail = async(req, res)=>{
+  const user = await User.findById(req.query._id);
+  if (user) return res.status(200).json(user);
+  return res.status(400).json("Load data failed");
+}
+exports.getUser = async(req, res, next)=>{
+  const user = await User.findById(req.query.id);
+  if (!user) req.user1=null;
+  else {
+    var user1={
+      picture: user.picture,
+      _id: user._id,
+      name: user.name
+    }
+    req.user1 = user1;
+  }
+    next();
 }

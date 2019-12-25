@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  rate: {
+    type: Number,
+    default: 0
+  },
   address: {
     type: {
       address: String,
@@ -65,6 +69,10 @@ const userSchema = new mongoose.Schema({
     }
   },
   wages:{
+    type: Number,
+    default: 0
+  },
+  newMessages:{
     type: Number,
     default: 0
   }
