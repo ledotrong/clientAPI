@@ -9,8 +9,8 @@ var smtpTransport = nodemailer.createTransport({
 });
 
 exports.SendVerifyAccountMail = function (host, email,id,role, cb) {
-    link = "http://" + host + "/verifyaccount/" + id+"/"+role;
-    mailOptions = {
+    const link = "https://" + host + "/verifyaccount/" + id+"/"+role;
+    const mailOptions = {
         to: email,
         subject: "[Tutor] Verify Account",
         html: "Hello,<br> Please click on the link to verify your account.<br><a href=" + link + ">Click here</a>."
@@ -29,7 +29,7 @@ exports.SendVerifyAccountMail = function (host, email,id,role, cb) {
 }
 
 exports.forgotPassword = function ( email,code,cb) {
-    mailOptions = {
+    const mailOptions = {
         to: email,
         subject: "[Tutor] Forgot Password",
         html: "Hello,<br> Please enter <b>"+code+"</b> to change your password."
